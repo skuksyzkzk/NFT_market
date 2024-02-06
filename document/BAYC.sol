@@ -23,7 +23,8 @@ contract BoredApeYachtClub is ERC721, Ownable {
 
     constructor(string memory name, string memory symbol, uint256 maxNftSupply, uint256 saleStart) ERC721(name, symbol) {
         MAX_APES = maxNftSupply;//실제 만개로 나왔었다 
-        REVEAL_TIMESTAMP = saleStart + (86400 * 9);
+        REVEAL_TIMESTAMP = saleStart + (86400 * 9);//nft의 공개 시점 바로 민팅하고 보여지는 것이 아니다 하루가 86400초 이니까 9일이후로 공개된것 
+
     }
 
     function withdraw() public onlyOwner {
@@ -61,7 +62,8 @@ contract BoredApeYachtClub is ERC721, Ownable {
     }
 
     /*
-    * Pause sale if active, make active if paused
+    * Pause sale if active, make active if paused 
+    이걸로 설정 가능하다 이게 true 여야지 민팅이 가능한 것 
     */
     function flipSaleState() public onlyOwner {
         saleIsActive = !saleIsActive;
@@ -69,13 +71,15 @@ contract BoredApeYachtClub is ERC721, Ownable {
 
     /**
     * Mints Bored Apes
+
+
     */
     function mintApe(uint numberOfTokens) public payable {
-        require(saleIsActive, "Sale must be active to mint Ape");
-        require(numberOfTokens <= maxApePurchase, "Can only mint 20 tokens at a time");
-        require(totalSupply().add(numberOfTokens) <= MAX_APES, "Purchase would exceed max supply of Apes");
-        require(apePrice.mul(numberOfTokens) <= msg.value, "Ether value sent is not correct");
-        
+        require(saleIsActive, "Sale must be active to mint Ape");// 현재 판매중인 가 
+        require(numberOfTokens <= maxApePurchase, "Can only mint 20 tokens at a time");//최대 20개 
+        require(totalSupply().add(numberOfTokens) <= MAX_APES, "Purchase would exceed max supply of Apes");//민팅할떄 만개이하 
+        require(apePrice.mul(numberOfTokens) <= msg.value, "Ether value sent is not correct");//민팅하는 갯수하고 가격 곱했을때 그거 체크 
+        //이 아래가 재진입 막기 위한 것 
         for(uint i = 0; i < numberOfTokens; i++) {
             uint mintIndex = totalSupply();
             if (totalSupply() < MAX_APES) {
